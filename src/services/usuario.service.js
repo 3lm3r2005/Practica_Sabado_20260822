@@ -22,7 +22,7 @@ exports.login = async (email, password) => {
   };
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: '24h'
+    expiresIn: '8h'
   });
 
   return {

@@ -8,17 +8,17 @@ const usuarioRoutes = require('./routes/usuario.routes');
 
 const app = express();
 
-// Configuración de CORS con soporte para cookies/credenciales
+// Configuración de CORS
 const corsOptions = {
-  origin: process.env.CLIENT_URL && process.env.CLIENT_URL !== '*' ? process.env.CLIENT_URL : true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+    origin: process.env.CLIENT_URL || '*', // O especifica tu Frontend (ej: 'http://localhost:5173')
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-use-cookie']
 };
 
 app.use(cors(corsOptions)); // Aplicar CORS globalmente
-app.use(cookieParser()); // Parser de cookies HttpOnly
 app.use(express.json());
+app.use(cookieParser());
 
 // Registro de Rutas
 app.use('/api/usuarios', usuarioRoutes);

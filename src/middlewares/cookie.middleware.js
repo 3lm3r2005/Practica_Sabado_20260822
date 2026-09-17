@@ -1,42 +1,24 @@
-const COOKIE_NAME = 'token';
+exports.opcionalHttpOnlyCookie = (req, res, next) => {
+    // Guardamos la función res.json original de Express
+    const originalJson = res.json;
 
-const cookieConfig = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  maxAge: 24 * 60 * 60 * 1000 // 24 horas
-};
+    // Sobrescribimos res.json temporalmente para interceptar la respuesta del login
+    res.json = function (data) {
+        // Si el cliente envió el header 'x-use-cookie: true' y la respuesta incluye un token
+        const usaCookie = req.headers['x-use-cookie'] === 'true';
 
-// Adjunta el token en una cookie HttpOnly
-const adjuntarTokenCookie = (res, token) => {
-  res.cookie(COOKIE_NAME, token, cookieConfig);
-};
+        if (usaCookie && data && data.token) {
+            res.cookie('token', data.token, {
+                httpOnly: true, // Evita lectura por JS (protección XSS)
+                secure: process.env.COOKIE_SECURE === 'true', // Solo HTTPS en producción
+                sameSite: process.env.COOKIE_SAMESITE || 'none',
+                maxAge: 8 * 60 * 60 * 1000 // 8 Horas (mismo tiempo que el JWT)
+            });
+        }
 
-// Limpia la cookie del token al cerrar sesión
-const limpiarTokenCookie = (res) => {
-  res.clearCookie(COOKIE_NAME, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-  });
-};
+        // Ejecuta la respuesta JSON normal hacia el cliente
+        return originalJson.call(this, data);
+    };
 
-// Middleware para interceptar la respuesta de login y adjuntar la cookie
-const adjuntarCookieMiddleware = (req, res, next) => {
-  const originalJson = res.json.bind(res);
-  res.json = (data) => {
-    if (data && data.token) {
-      adjuntarTokenCookie(res, data.token);
-    }
-    return originalJson(data);
-  };
-  next();
-};
-
-module.exports = {
-  COOKIE_NAME,
-  cookieConfig,
-  adjuntarTokenCookie,
-  limpiarTokenCookie,
-  adjuntarCookieMiddleware
+    next();
 };

@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const usuarioController = require('../controllers/usuario.controller');
 const { verificarToken, permitirRoles } = require('../middlewares/auth.middleware');
+const { opcionalHttpOnlyCookie } = require('../middlewares/cookie.middleware');
 
 // Endpoints públicos
-router.post('/login', usuarioController.login);
+router.post('/login', opcionalHttpOnlyCookie, usuarioController.login);
 router.post('/logout', usuarioController.logout);
 
 // Endpoints protegidos exclusivamente para ADMIN

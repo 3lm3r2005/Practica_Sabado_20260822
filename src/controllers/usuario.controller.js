@@ -1,11 +1,9 @@
 const usuarioService = require('../services/usuario.service');
-const { adjuntarTokenCookie, limpiarTokenCookie } = require('../middlewares/cookie.middleware');
 
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const resultado = await usuarioService.login(email, password);
-    adjuntarTokenCookie(res, resultado.token);
     res.status(200).json(resultado);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -13,7 +11,7 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
-  limpiarTokenCookie(res);
+  res.clearCookie('token');
   res.status(200).json({ mensaje: 'Sesión cerrada exitosamente' });
 };
 
