@@ -8,9 +8,13 @@ const usuarioRoutes = require('./routes/usuario.routes');
 
 const app = express();
 
-// Configuración de CORS
+// Configuración de CORS (acepta varios orígenes separados por coma en CLIENT_URL)
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+    .split(',')
+    .map(origin => origin.trim());
+
 const corsOptions = {
-    origin: process.env.CLIENT_URL || '*', // O especifica tu Frontend (ej: 'http://localhost:5173')
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-use-cookie']
